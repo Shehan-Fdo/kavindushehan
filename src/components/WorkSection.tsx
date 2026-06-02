@@ -328,7 +328,7 @@ export default function WorkSection({ items }: WorkSectionProps) {
 
           const baseWidth = layout.offsetWidth;
 
-          // Calculate exact closed-form gap compensation to maintain constant visual gaps (80px)
+          // Calculate exact closed-form gap compensation to maintain constant visual gaps (32px mobile / 80px desktop)
           const L = halfContainerWidth * 1.05;
           const x = Math.abs(dClamped);
           
@@ -339,7 +339,8 @@ export default function WorkSection({ items }: WorkSectionProps) {
             val = -0.025 - 0.4 * (x - 1.0);
           }
           
-          const multiplier = L * baseWidth / (baseWidth + 80);
+          const gap = containerWidth < 640 ? 32 : 80;
+          const multiplier = L * baseWidth / (baseWidth + gap);
           const extraX = Math.sign(dClamped) * val * multiplier;
 
           return {
@@ -474,7 +475,7 @@ export default function WorkSection({ items }: WorkSectionProps) {
 
           <div
             ref={trackRef}
-            className="flex gap-20 flex-nowrap will-change-transform"
+            className="flex gap-8 sm:gap-20 flex-nowrap will-change-transform"
             style={{ width: "max-content" }}
           >
             {marqueeItems.map((item, idx) => (
@@ -642,7 +643,7 @@ export default function WorkSection({ items }: WorkSectionProps) {
                           handlePrev();
                         }
                       }}
-                      className={`max-w-full max-h-[35vh] md:max-h-[55vh] object-contain rounded-2xl shadow-lg pointer-events-none select-none md:pointer-events-auto active:cursor-grabbing ${
+                      className={`w-auto h-auto max-w-full max-h-[35vh] md:max-h-[55vh] object-contain rounded-2xl shadow-lg pointer-events-none select-none md:pointer-events-auto active:cursor-grabbing ${
                         isZoomed ? "cursor-zoom-out z-20" : "cursor-zoom-in"
                       }`}
                       draggable="false"

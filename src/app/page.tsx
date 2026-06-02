@@ -1,6 +1,7 @@
 import HomeSection from "@/components/Home";
 import About from "@/components/About";
 import WorkSection, { WorkItem } from "@/components/WorkSection";
+import Footer from "@/components/Footer";
 
 interface APIProject {
   id: string;
@@ -49,6 +50,7 @@ export default async function Page() {
       {items.length > 0 && (
         <WorkSection items={items} />
       )}
+      <Footer />
     </div>
   );
 }

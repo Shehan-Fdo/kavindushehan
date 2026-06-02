@@ -73,12 +73,6 @@ export default function About() {
             >
 
 
-              {/* Hole punch */}
-              <div
-                className={`w-5 h-5 rounded-full flex-shrink-0 border-2 ${skill.blue ? "border-white/30 bg-white/10" : "border-neutral-300"
-                  }`}
-              />
-
               <div>
                 <p
                   className={`text-[13px] font-black uppercase tracking-wide mb-1 ${skill.blue ? "text-white" : "text-primary"
