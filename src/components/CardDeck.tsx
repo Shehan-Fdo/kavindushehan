@@ -9,6 +9,15 @@ const IMAGES_ARRAY = [
   "/art4.png",
 ];
 
+function shuffleArray<T>(array: T[]): T[] {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
 // Structural layout and speed settings for the 4 overlapping cards
 const CARDS_LAYOUT = [
   { speed: 0.6, baseX: -180, baseY: 30, baseRot: -12, shadowClass: "shadow-lg" },
@@ -29,6 +38,78 @@ function getCardIdFromElement(el: EventTarget | null): number | null {
 export default function CardDeck() {
   const [cardOrder, setCardOrder] = useState<number[]>([0, 1, 2, 3]);
   const cardOrderRef = useRef<number[]>([0, 1, 2, 3]);
+  const [images, setImages] = useState<string[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    let active = true;
+
+    async function fetchImages() {
+      try {
+        const res = await fetch("https://portfolio-api.shehan-dev.workers.dev/projects");
+        if (!res.ok) throw new Error("API request failed");
+        const json = await res.json();
+        
+        const allUrls: string[] = json.data.flatMap((p: any) => p.images || []);
+        const uniqueUrls = Array.from(new Set(allUrls));
+
+        const checkIsSquare = (url: string): Promise<boolean> => {
+          return new Promise((resolve) => {
+            const img = new Image();
+            const timer = setTimeout(() => {
+              img.src = "";
+              resolve(false);
+            }, 4000);
+
+            img.onload = () => {
+              clearTimeout(timer);
+              resolve(img.naturalWidth > 0 && img.naturalWidth === img.naturalHeight);
+            };
+            img.onerror = () => {
+              clearTimeout(timer);
+              resolve(false);
+            };
+            img.src = url;
+          });
+        };
+
+        const results = await Promise.all(
+          uniqueUrls.map(async (url) => {
+            const isSquare = await checkIsSquare(url);
+            return { url, isSquare };
+          })
+        );
+
+        if (!active) return;
+
+        const squareUrls = results.filter((r) => r.isSquare).map((r) => r.url);
+
+        if (squareUrls.length >= 4) {
+          const shuffled = shuffleArray(squareUrls);
+          setImages(shuffled.slice(0, 4));
+        } else {
+          const shuffled = shuffleArray(IMAGES_ARRAY);
+          setImages(shuffled);
+        }
+      } catch (err) {
+        console.error("CardDeck API fetch failed, using fallback.", err);
+        if (active) {
+          const shuffled = shuffleArray(IMAGES_ARRAY);
+          setImages(shuffled);
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    }
+
+    fetchImages();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
@@ -630,11 +711,15 @@ export default function CardDeck() {
               zIndex: 10 + slotIndex,
             }}
           >
-            {IMAGES_ARRAY[cardId] ? (
+            {loading ? (
+              <div className="absolute inset-0 bg-neutral-200 overflow-hidden flex items-center justify-center rounded-3xl">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full animate-shimmer" />
+              </div>
+            ) : images[cardId] ? (
               <img
-                src={IMAGES_ARRAY[cardId]}
+                src={images[cardId]}
                 alt={`Card Visual ${cardId + 1}`}
-                className="w-full h-full object-cover pointer-events-none select-none"
+                className="w-full h-full object-cover pointer-events-none select-none animate-fadeIn"
                 draggable="false"
               />
             ) : (
@@ -645,6 +730,27 @@ export default function CardDeck() {
           </div>
         );
       })}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes shimmer {
+          100% {
+            transform: translateX(100%);
+          }
+        }
+        .animate-shimmer {
+          animation: shimmer 1.6s infinite;
+        }
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.4s ease-out forwards;
+        }
+      `}} />
     </div>
   );
 }

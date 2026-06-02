@@ -118,6 +118,138 @@ function ScrollReveal({ children }: ScrollRevealProps) {
     </div>
   );
 }
+interface GridCardProps {
+  item: WorkItem;
+  onClick: () => void;
+}
+
+function GridCard({ item, onClick }: GridCardProps) {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const src = item.coverImage;
+  const hasMultiple = item.type === "directory" && item.images.length > 1;
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    if (imgRef.current?.complete) {
+      setImageLoaded(true);
+    }
+  }, []);
+
+  return (
+    <div
+      onClick={onClick}
+      className="group relative w-full rounded-3xl bg-neutral-100 transition-transform duration-500 hover:scale-[1.03] cursor-pointer"
+    >
+      {/* Third Card (Bottom Stack Layer) */}
+      {hasMultiple && item.images[2] && (
+        <div className="absolute inset-0 rounded-3xl overflow-hidden shadow-sm border border-neutral-200/30 bg-neutral-50 -translate-x-[3%] -translate-y-[3%] rotate-[-4deg] z-[-2] transition-transform duration-500 group-hover:-translate-x-[6%] group-hover:-translate-y-[6%] group-hover:rotate-[-8deg] pointer-events-none">
+          <img
+            src={item.images[2]}
+            className="w-full h-full object-cover"
+            alt="stack image 3"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-white/50 z-10" />
+        </div>
+      )}
+
+      {/* Second Card (Middle Stack Layer) */}
+      {hasMultiple && item.images[1] && (
+        <div className="absolute inset-0 rounded-3xl overflow-hidden shadow-sm border border-neutral-200/30 bg-neutral-50 -translate-x-[1.5%] -translate-y-[1.5%] rotate-[-2deg] z-[-1] transition-transform duration-500 group-hover:-translate-x-[3%] group-hover:-translate-y-[3%] group-hover:rotate-[-4deg] pointer-events-none">
+          <img
+            src={item.images[1]}
+            className="w-full h-full object-cover"
+            alt="stack image 2"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-white/25 z-10" />
+        </div>
+      )}
+
+      {/* Main Card Wrapper (Top Layer) */}
+      <div className={`w-full rounded-3xl overflow-hidden shadow-sm border border-neutral-200/30 bg-neutral-50 relative z-0 ${
+        !imageLoaded ? "min-h-[160px] sm:min-h-[220px]" : ""
+      }`}>
+        {/* Skeleton Shimmer */}
+        {!imageLoaded && (
+          <div className="absolute inset-0 bg-neutral-200 overflow-hidden flex items-center justify-center rounded-3xl">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full animate-shimmer" />
+          </div>
+        )}
+        <img
+          ref={imgRef}
+          src={src}
+          alt={item.name}
+          onLoad={() => setImageLoaded(true)}
+          onError={() => setImageLoaded(true)}
+          className={`w-full h-auto object-contain rounded-3xl transition-opacity duration-500 ${
+            imageLoaded ? "opacity-100" : "opacity-0"
+          }`}
+          loading="lazy"
+        />
+      </div>
+
+      {/* Collection Indicator Badge */}
+      {item.type === "directory" && (
+        <span className="absolute bottom-3 right-3 text-[10px] font-normal uppercase tracking-wider text-white bg-primary px-2.5 py-1 rounded-full shadow-sm z-10 font-poppins">
+          {item.images.length} items
+        </span>
+      )}
+    </div>
+  );
+}
+interface FeaturedCardProps {
+  item: WorkItem;
+  onClick: () => void;
+  onLoad: () => void;
+}
+
+function FeaturedCard({ item, onClick, onLoad }: FeaturedCardProps) {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const src = item.coverImage;
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    if (imgRef.current?.complete) {
+      setImageLoaded(true);
+      onLoad();
+    }
+  }, [onLoad]);
+
+  return (
+    <div
+      onClick={onClick}
+      className={`marquee-card relative h-[150px] sm:h-[220px] rounded-3xl overflow-hidden shadow-sm border border-neutral-200/30 bg-neutral-50 cursor-pointer transition-all duration-300 hover:scale-[1.05] active:scale-95 ${
+        !imageLoaded ? "min-w-[200px] sm:min-w-[300px]" : ""
+      }`}
+    >
+      {/* Skeleton Shimmer */}
+      {!imageLoaded && (
+        <div className="absolute inset-0 bg-neutral-200 overflow-hidden flex items-center justify-center rounded-3xl">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full animate-shimmer" />
+        </div>
+      )}
+      <img
+        ref={imgRef}
+        src={src}
+        alt={item.name}
+        onLoad={() => {
+          setImageLoaded(true);
+          onLoad();
+        }}
+        onError={() => {
+          setImageLoaded(true);
+          onLoad();
+        }}
+        className={`h-full w-auto pointer-events-none select-none transition-opacity duration-500 ${
+          imageLoaded ? "opacity-100" : "opacity-0"
+        }`}
+        loading="lazy"
+        draggable="false"
+      />
+    </div>
+  );
+}
 
 export default function WorkSection({ items }: WorkSectionProps) {
   const [selectedItem, setSelectedItem] = useState<WorkItem | null>(null);
@@ -454,7 +586,7 @@ export default function WorkSection({ items }: WorkSectionProps) {
 
   return (
     <section className="w-full py-20 md:py-32 border-t border-neutral-200/30">
-      {/* Hide Scrollbars CSS */}
+      {/* Hide Scrollbars & Keyframes CSS */}
       <style dangerouslySetInnerHTML={{
         __html: `
         .scrollbar-none::-webkit-scrollbar {
@@ -463,6 +595,14 @@ export default function WorkSection({ items }: WorkSectionProps) {
         .scrollbar-none {
           -ms-overflow-style: none;
           scrollbar-width: none;
+        }
+        @keyframes shimmer {
+          100% {
+            transform: translateX(100%);
+          }
+        }
+        .animate-shimmer {
+          animation: shimmer 1.6s infinite;
         }
       `}} />
 
@@ -501,22 +641,14 @@ export default function WorkSection({ items }: WorkSectionProps) {
                 key={`${item.name}-featured-${idx}`}
                 className="marquee-card-wrapper flex-shrink-0 will-change-transform"
               >
-                <div
+                <FeaturedCard
+                  item={item}
                   onClick={() => {
                     if (draggedRef.current) return;
                     setSelectedItem(item);
                   }}
-                  className="marquee-card h-[150px] sm:h-[220px] rounded-3xl overflow-hidden shadow-sm border border-neutral-200/30 bg-neutral-50 cursor-pointer transition-all duration-300 hover:scale-[1.05] active:scale-95"
-                >
-                  <img
-                    src={item.coverImage}
-                    alt={item.name}
-                    className="h-full w-auto pointer-events-none select-none"
-                    loading="lazy"
-                    draggable="false"
-                    onLoad={triggerCacheRebuild}
-                  />
-                </div>
+                  onLoad={triggerCacheRebuild}
+                />
               </div>
             ))}
           </div>
@@ -536,62 +668,11 @@ export default function WorkSection({ items }: WorkSectionProps) {
         {/* Grid Container (Masonry Layout) */}
         <div className="mt-16 text-left">
           <div className="columns-2 md:columns-3 gap-6 md:gap-10 lg:gap-14 xl:gap-20 space-y-6 md:space-y-10 lg:space-y-14 xl:space-y-20">
-            {items.map((item) => {
-              const src = item.coverImage;
-              const hasMultiple = item.type === "directory" && item.images.length > 1;
-
-              return (
-                <ScrollReveal key={item.name}>
-                  <div
-                    onClick={() => setSelectedItem(item)}
-                    className="group relative w-full rounded-3xl bg-neutral-100 transition-transform duration-500 hover:scale-[1.03] cursor-pointer"
-                  >
-                    {/* Third Card (Bottom Stack Layer) */}
-                    {hasMultiple && item.images[2] && (
-                      <div className="absolute inset-0 rounded-3xl overflow-hidden shadow-sm border border-neutral-200/30 bg-neutral-50 -translate-x-[3%] -translate-y-[3%] rotate-[-4deg] z-[-2] transition-transform duration-500 group-hover:-translate-x-[6%] group-hover:-translate-y-[6%] group-hover:rotate-[-8deg] pointer-events-none">
-                        <img
-                          src={item.images[2]}
-                          className="w-full h-full object-cover"
-                          alt="stack image 3"
-                          loading="lazy"
-                        />
-                        <div className="absolute inset-0 bg-white/50 z-10" />
-                      </div>
-                    )}
-
-                    {/* Second Card (Middle Stack Layer) */}
-                    {hasMultiple && item.images[1] && (
-                      <div className="absolute inset-0 rounded-3xl overflow-hidden shadow-sm border border-neutral-200/30 bg-neutral-50 -translate-x-[1.5%] -translate-y-[1.5%] rotate-[-2deg] z-[-1] transition-transform duration-500 group-hover:-translate-x-[3%] group-hover:-translate-y-[3%] group-hover:rotate-[-4deg] pointer-events-none">
-                        <img
-                          src={item.images[1]}
-                          className="w-full h-full object-cover"
-                          alt="stack image 2"
-                          loading="lazy"
-                        />
-                        <div className="absolute inset-0 bg-white/25 z-10" />
-                      </div>
-                    )}
-
-                    {/* Main Card Wrapper (Top Layer) */}
-                    <div className="w-full rounded-3xl overflow-hidden shadow-sm border border-neutral-200/30 bg-neutral-50 relative z-0">
-                      <img
-                        src={src}
-                        alt={item.name}
-                        className="w-full h-auto object-contain rounded-3xl"
-                        loading="lazy"
-                      />
-                    </div>
-
-                    {/* Collection Indicator Badge */}
-                    {item.type === "directory" && (
-                      <span className="absolute bottom-3 right-3 text-[10px] font-normal uppercase tracking-wider text-white bg-primary px-2.5 py-1 rounded-full shadow-sm z-10 font-poppins">
-                        {item.images.length} items
-                      </span>
-                    )}
-                  </div>
-                </ScrollReveal>
-              );
-            })}
+            {items.map((item) => (
+              <ScrollReveal key={item.name}>
+                <GridCard item={item} onClick={() => setSelectedItem(item)} />
+              </ScrollReveal>
+            ))}
           </div>
         </div>
       </div>
