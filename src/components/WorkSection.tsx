@@ -125,6 +125,9 @@ export default function WorkSection({ items }: WorkSectionProps) {
   const [isZoomed, setIsZoomed] = useState(false);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isMobile, setIsMobile] = useState(false);
+  const [isMobileExpanded, setIsMobileExpanded] = useState(false);
+  const [direction, setDirection] = useState(1);
+  const isFirstLoadRef = useRef(true);
   const marqueeContainerRef = useRef<HTMLDivElement>(null);
   const imageWrapperRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
@@ -206,6 +209,10 @@ export default function WorkSection({ items }: WorkSectionProps) {
   };
 
   const handleImageClick = (e: React.MouseEvent) => {
+    if (window.innerWidth < 768) {
+      setIsMobileExpanded((prev) => !prev);
+      return;
+    }
     if (!isZoomed) {
       const wrapperRect = imageWrapperRef.current?.getBoundingClientRect();
       const img = imageRef.current;
@@ -396,6 +403,9 @@ export default function WorkSection({ items }: WorkSectionProps) {
     setCurrentIndex(0);
     setIsZoomed(false);
     setPan({ x: 0, y: 0 });
+    setIsMobileExpanded(false);
+    setDirection(1);
+    isFirstLoadRef.current = true;
   }, [selectedItem]);
 
   // Reset zoom when image changes
@@ -410,9 +420,13 @@ export default function WorkSection({ items }: WorkSectionProps) {
       if (!selectedItem) return;
       if (e.key === "Escape") setSelectedItem(null);
       if (e.key === "ArrowLeft") {
+        isFirstLoadRef.current = false;
+        setDirection(-1);
         setCurrentIndex((prev) => (prev === 0 ? selectedItem.images.length - 1 : prev - 1));
       }
       if (e.key === "ArrowRight") {
+        isFirstLoadRef.current = false;
+        setDirection(1);
         setCurrentIndex((prev) => (prev === selectedItem.images.length - 1 ? 0 : prev + 1));
       }
     };
@@ -423,12 +437,16 @@ export default function WorkSection({ items }: WorkSectionProps) {
   const handlePrev = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     if (!selectedItem) return;
+    isFirstLoadRef.current = false;
+    setDirection(-1);
     setCurrentIndex((prev) => (prev === 0 ? selectedItem.images.length - 1 : prev - 1));
   };
 
   const handleNext = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     if (!selectedItem) return;
+    isFirstLoadRef.current = false;
+    setDirection(1);
     setCurrentIndex((prev) => (prev === selectedItem.images.length - 1 ? 0 : prev + 1));
   };
 
@@ -586,20 +604,28 @@ export default function WorkSection({ items }: WorkSectionProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setSelectedItem(null)}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-100/80 backdrop-blur-xl p-4 md:p-8 overflow-y-auto"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-100/60 backdrop-blur-md p-4 md:p-8 overflow-y-auto will-change-[opacity,backdrop-filter]"
           >
             <motion.div
-              initial={{ scale: 0.95, y: 10, opacity: 0 }}
-              animate={{ scale: 1, y: 0, opacity: 1 }}
-              exit={{ scale: 0.95, y: 10, opacity: 0 }}
-              transition={{ type: "spring", damping: 30, stiffness: 400 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ type: "tween", ease: "easeInOut", duration: 0.25 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-6xl bg-white/40 border border-neutral-200/80 rounded-[32px] overflow-hidden shadow-2xl cursor-default backdrop-blur-xl flex flex-col md:grid md:grid-cols-12 md:h-[80vh] min-h-[500px]"
+              className={`relative w-full max-w-6xl cursor-default flex flex-col md:grid md:grid-cols-12 min-h-[500px] overflow-hidden transition-all duration-500 ease-in-out h-[80vh] md:h-[80vh] will-change-transform ${
+                isMobileExpanded 
+                  ? "bg-transparent border-transparent rounded-none shadow-none backdrop-blur-none" 
+                  : "bg-white/80 border border-neutral-200/80 rounded-[32px] shadow-2xl backdrop-blur-md"
+              }`}
             >
               {/* Close Button */}
               <button
                 onClick={() => setSelectedItem(null)}
-                className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center bg-white hover:bg-neutral-50 text-neutral-800 rounded-full shadow-md border border-neutral-200/50 hover:scale-105 active:scale-95 transition-all cursor-pointer z-20"
+                className={`absolute w-10 h-10 flex items-center justify-center bg-white hover:bg-neutral-50 text-neutral-800 rounded-full shadow-md border border-neutral-200/50 hover:scale-105 active:scale-95 transition-all duration-500 ease-in-out cursor-pointer z-20 ${
+                  isMobileExpanded 
+                    ? "top-[calc(100%-64px)] left-[calc(50%-20px)]" 
+                    : "top-4 left-[calc(100%-56px)]"
+                }`}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -607,30 +633,43 @@ export default function WorkSection({ items }: WorkSectionProps) {
               </button>
 
               {/* Left Side: Image Viewer */}
-              <div className="relative col-span-8 bg-white/10 flex flex-col items-center justify-center p-6 md:p-8 border-b md:border-b-0 md:border-r border-neutral-200/40 h-[45vh] md:h-full select-none overflow-hidden">
+              <div className={`relative col-span-8 flex flex-col items-center justify-center border-neutral-200/40 select-none overflow-hidden transition-all duration-500 ease-in-out md:h-full md:pb-8 md:p-8 md:border-r md:bg-white/10 ${
+                isMobileExpanded 
+                  ? "w-full h-full px-0 pt-6 pb-20 border-b border-transparent bg-transparent" 
+                  : "w-full h-full px-6 pt-6 pb-[37vh] border-b border-neutral-200/40 bg-white/10"
+              }`}>
                 
                 {/* Active Image Wrapper */}
                 <div
                   ref={imageWrapperRef}
                   onMouseMove={handleMouseMove}
                   onMouseLeave={handleMouseLeave}
-                  className="relative w-full flex-1 flex items-center justify-center overflow-hidden z-10"
+                  onClick={handleImageClick}
+                  className="relative w-full flex-1 flex items-center justify-center overflow-hidden z-10 cursor-pointer md:p-8 lg:p-12"
                 >
-                  <AnimatePresence mode="wait">
+                  <AnimatePresence mode="popLayout">
                     <motion.img
                       ref={imageRef}
                       key={currentIndex}
                       src={selectedItem.images[currentIndex]}
                       alt={`${selectedItem.name} image ${currentIndex + 1}`}
-                      initial={{ opacity: 0, scale: 0.97, x: 20 }}
+                      initial={isFirstLoadRef.current ? { opacity: 0, scale: 0.95, x: 0 } : { opacity: 0, x: direction > 0 ? 150 : -150 }}
                       animate={{
                         opacity: 1,
-                        scale: isZoomed ? 1.8 : 1,
                         x: isZoomed ? pan.x : 0,
-                        y: isZoomed ? pan.y : 0
+                        y: isZoomed ? pan.y : 0,
+                        scale: isZoomed ? 1.8 : 1
                       }}
-                      exit={{ opacity: 0, scale: 0.97, x: -20 }}
-                      transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                      exit={{ opacity: 0, x: direction > 0 ? -150 : 150 }}
+                      transition={isFirstLoadRef.current 
+                        ? { type: "tween", ease: "easeOut", duration: 0.3 }
+                        : {
+                            x: isZoomed ? { type: "spring", stiffness: 300, damping: 30 } : { type: "tween", ease: "easeInOut", duration: 0.35 },
+                            y: isZoomed ? { type: "spring", stiffness: 300, damping: 30 } : { type: "tween", ease: "easeInOut", duration: 0.35 },
+                            opacity: { type: "tween", ease: "easeInOut", duration: 0.25 },
+                            scale: { type: "tween", ease: "easeInOut", duration: 0.35 }
+                          }
+                      }
                       drag={isZoomed ? (isMobile ? true : false) : "x"}
                       dragConstraints={isZoomed ? imageWrapperRef : { left: 0, right: 0 }}
                       dragElastic={0.4}
@@ -643,7 +682,11 @@ export default function WorkSection({ items }: WorkSectionProps) {
                           handlePrev();
                         }
                       }}
-                      className={`w-auto h-auto max-w-full max-h-[35vh] md:max-h-[55vh] object-contain rounded-2xl shadow-lg pointer-events-none select-none md:pointer-events-auto active:cursor-grabbing ${
+                      className={`w-auto h-auto max-w-full object-contain pointer-events-none select-none md:pointer-events-auto active:cursor-grabbing flex-shrink-0 transition-[max-height,border-radius,box-shadow] duration-500 ease-in-out ${
+                        isMobileExpanded 
+                          ? "rounded-none shadow-none max-h-[68vh]" 
+                          : "rounded-2xl shadow-lg max-h-[38vh] md:max-h-full"
+                      } ${
                         isZoomed ? "cursor-zoom-out z-20" : "cursor-zoom-in"
                       }`}
                       draggable="false"
@@ -681,11 +724,19 @@ export default function WorkSection({ items }: WorkSectionProps) {
 
                 {/* Thumbnails Row (if multiple images) */}
                 {selectedItem.images.length > 1 && (
-                  <div className="flex gap-2.5 mt-6 max-w-full overflow-x-auto p-1 scrollbar-none snap-x z-10">
+                  <div className={`flex gap-2.5 max-w-full overflow-x-auto scrollbar-none snap-x z-10 md:flex transition-all duration-500 ease-in-out ${
+                    isMobileExpanded 
+                      ? "h-0 mt-0 p-0 opacity-0 overflow-hidden pointer-events-none" 
+                      : "h-14 sm:h-16 mt-6 p-1 opacity-100"
+                  }`}>
                     {selectedItem.images.map((img, idx) => (
                       <button
                         key={idx}
-                        onClick={() => setCurrentIndex(idx)}
+                        onClick={() => {
+                          isFirstLoadRef.current = false;
+                          setDirection(idx > currentIndex ? 1 : -1);
+                          setCurrentIndex(idx);
+                        }}
                         className={`relative w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0 rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
                           currentIndex === idx ? "border-primary scale-105 shadow-md shadow-primary/20" : "border-neutral-200/60 opacity-60 hover:opacity-100"
                         }`}
@@ -698,7 +749,11 @@ export default function WorkSection({ items }: WorkSectionProps) {
               </div>
 
               {/* Right Side: Details Panel */}
-              <div className="col-span-4 flex flex-col p-6 md:p-8 h-[35vh] md:h-full justify-between overflow-y-auto bg-white border-t md:border-t-0 md:border-l border-neutral-200/80 z-10 font-poppins">
+              <div className={`z-10 font-poppins transition-all duration-500 ease-in-out bg-white border-neutral-200/80 md:relative md:bottom-auto md:left-auto md:right-auto md:col-span-4 md:h-full md:opacity-100 md:translate-y-0 md:pointer-events-auto md:p-8 md:overflow-y-auto md:border-t-0 md:border-l ${
+                isMobileExpanded 
+                  ? "absolute bottom-0 left-0 right-0 h-[35vh] p-6 border-t opacity-0 translate-y-16 pointer-events-none overflow-hidden" 
+                  : "absolute bottom-0 left-0 right-0 h-[35vh] p-6 border-t opacity-100 translate-y-0 pointer-events-auto overflow-y-auto"
+              }`}>
                 <div className="flex flex-col gap-5">
                   {/* Category Tags */}
                   {selectedItem.category && selectedItem.category.length > 0 && (

@@ -108,12 +108,12 @@ export default function Footer() {
               hello@kavindushehan.site
             </a>
             <a 
-              href="https://wa.me/94774512878" 
+              href="https://wa.me/94783765535" 
               target="_blank" 
               rel="noopener noreferrer" 
               className="hover:text-primary transition-colors w-fit font-light"
             >
-              +94 77 451 2878 (WhatsApp)
+              +94 78 376 5535 (WhatsApp)
             </a>
           </div>
 

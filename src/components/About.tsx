@@ -48,7 +48,13 @@ export default function About() {
           <p className="text-base leading-relaxed text-black/60 mb-8 max-w-md">
             I&apos;m Shehan — a self-taught graphic designer from Colombo, Sri Lanka,
             operating under{" "}
-            <span className="font-black text-primary">Pixlo</span>. Started
+            <img
+              src="/pixlo-text-logo.svg"
+              alt="Pixlo"
+              className="inline-block h-[18px] align-middle mx-1"
+              draggable="false"
+            />
+            . Started
             by watching cursor movements on downloaded Photoshop tutorials in 2020.
             Now I help local businesses look sharp and show up consistently.
           </p>

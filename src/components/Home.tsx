@@ -14,14 +14,14 @@ export default function HomeSection() {
       {/* Main Hero Content Area */}
       <main className="flex-1 flex flex-col items-center justify-center">
         {/* Name Title */}
-        <span className="text-4xl md:text-8xl font-bold opacity-80">I'm</span>
-        <h1 className="text-4xl md:text-8xl font-bold mb-6 text-primary">Kavindu Shehan</h1>
+        <span className="text-5xl md:text-9xl font-bold opacity-80 mb-4">I'm</span>
+        <h1 className="text-5xl md:text-[6.5rem] lg:text-[7.5rem] font-bold mb-16 text-primary leading-none">Kavindu Shehan</h1>
 
         {/* Card Deck Section */}
         <CardDeck />
 
         {/* Subtitle / Role */}
-        <h2 className="mt-10 text-6xl md:text-8xl font-black opacity-20 tracking-widest">
+        <h2 className="mt-20 text-6xl md:text-[6.5rem] lg:text-[7.5rem] font-black text-[#c2c2c2] tracking-widest leading-none">
           A GRAPHIC DESIGNER
         </h2>
       </main>

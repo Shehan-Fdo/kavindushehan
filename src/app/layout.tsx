@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { Poppins } from "next/font/google";
 import "./globals.css";
+import InteractiveGrid from "@/components/InteractiveGrid";
 
 const nohemi = localFont({
   src: [
@@ -75,7 +76,10 @@ export default function RootLayout({
       lang="en"
       className={`${nohemi.variable} ${poppins.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col relative">
+        <InteractiveGrid />
+        {children}
+      </body>
     </html>
   );
 }
