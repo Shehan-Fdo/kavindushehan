@@ -24,7 +24,7 @@ export default async function Page() {
   let items: WorkItem[] = [];
 
   try {
-    const res = await fetch("https://portfolio-api.shehan-dev.workers.dev/projects");
+    const res = await fetch("https://portfolio-api.shehan-dev.workers.dev/projects", { cache: "no-store" });
     if (res.ok) {
       const json: APIResponse = await res.json();
       items = json.data.map(project => ({
