@@ -69,7 +69,9 @@ export default function Footer() {
             </h2>
 
             <a
-              href="mailto:hello@kavindushehan.site"
+              href="https://wa.me/94783765535"
+              target="_blank"
+              rel="noopener noreferrer"
               className="group relative inline-flex items-center gap-3 bg-primary hover:bg-primary/95 text-white font-bold uppercase tracking-wider text-sm px-8 py-5 rounded-2xl shadow-lg transition-transform duration-300 hover:scale-[1.03] active:scale-95 cursor-pointer"
             >
               Start Collaboration
@@ -122,12 +124,20 @@ export default function Footer() {
             <h4 className="font-bold text-white uppercase tracking-wider text-xs opacity-60">Connect</h4>
             <div className="flex flex-wrap gap-x-6 gap-y-2">
               <a 
-                href="https://www.behance.net" 
+                href="https://wa.me/94783765535" 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="hover:text-primary transition-colors font-light"
               >
-                Behance
+                WhatsApp
+              </a>
+              <a 
+                href="https://www.facebook.com" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="hover:text-primary transition-colors font-light"
+              >
+                Facebook
               </a>
               <a 
                 href="https://www.instagram.com" 
@@ -138,20 +148,12 @@ export default function Footer() {
                 Instagram
               </a>
               <a 
-                href="https://dribbble.com" 
+                href="https://www.tiktok.com" 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="hover:text-primary transition-colors font-light"
               >
-                Dribbble
-              </a>
-              <a 
-                href="https://linkedin.com" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="hover:text-primary transition-colors font-light"
-              >
-                LinkedIn
+                TikTok
               </a>
             </div>
           </div>
